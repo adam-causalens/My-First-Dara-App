@@ -1,11 +1,13 @@
 from bokeh.plotting import figure
-from dara.components import Bokeh, Card
+from dara.components import Bokeh, Card, Select, Stack, Text
 from dara.components.plotting.palettes import CategoricalLight3
+from dara.core import py_component, Variable
 
-from my_first_app.definitions import data
+from my_first_app.definitions import data, features
 
 
-def scatter_plot(x: str, y: str):
+@py_component()
+def scatter_plot(x: Variable[str], y: Variable[str]):
     plot_data = data.copy()
     plot_data['color'] = plot_data['species_names'].map(
         {x: CategoricalLight3[i] for i, x in enumerate(data['species_names'].unique())}
@@ -25,7 +27,19 @@ def scatter_plot(x: str, y: str):
 
 
 def eda_page():
+    x_var = Variable('petal length (cm)')
+    y_var = Variable('petal width (cm)')
+
     return Card(
-        scatter_plot('petal length (cm)', 'petal width (cm)'),
+        Stack(
+            Text('X:'),
+            Select(items=features, value=x_var),
+            Text('Y:'),
+            Select(items=features, value=y_var),
+            direction='horizontal',
+            align='center',
+            hug=True,
+        ),
+        scatter_plot(x_var, y_var),
         title='Scatter Plot'
     )

@@ -26,9 +26,9 @@
 
 * Run `poetry run dara start`
 
-* Visit http://0.0.0.0:8000/hello-world
+* Visit http://0.0.0.0:8000/
 
-### 4. Add data
+### 4. Add new pages
 
 * Install dependencies to build a page that cna handle data: `poetry add scikit-learn`
 
@@ -36,5 +36,11 @@
 
 * Add new pages to the main config using `config.add()`
 
-* 
+### 5. Interactivity
+
+* use `dara.core.Variable`
+* use `dara.components.Select` for dropdowns
+* add `dara.core.py_component` as a decorator
+
+
 
