@@ -32,5 +32,9 @@
 
 * Install dependencies to build a page that cna handle data: `poetry add scikit-learn`
 
-*
+* Create a `pages` subdir and add new pages in python there
+
+* Add new pages to the main config using `config.add()`
+
+* 
 
