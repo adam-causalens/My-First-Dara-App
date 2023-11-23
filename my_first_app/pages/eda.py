@@ -3,7 +3,7 @@ from dara.components import Bokeh, Card, Select, Stack, Text
 from dara.components.plotting.palettes import CategoricalLight3
 from dara.core import py_component, Variable
 
-from my_first_app.definitions import data, features
+from my_first_app.data import data, features
 
 
 @py_component()
@@ -27,8 +27,8 @@ def scatter_plot(x: Variable[str], y: Variable[str]):
 
 
 def eda_page():
-    x_var = Variable('petal length (cm)')
-    y_var = Variable('petal width (cm)')
+    x_var = Variable('alcohol')
+    y_var = Variable('color_intensity')
 
     return Card(
         Stack(
@@ -41,5 +41,6 @@ def eda_page():
             hug=True,
         ),
         scatter_plot(x_var, y_var),
-        title='Exploratory Data Analysis'
+        title='Exploratory Data Analysis',
+        subtitle="Scatter Plot"
     )

@@ -12,7 +12,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 
-from my_first_app.definitions import data, features, target_names
+from my_first_app.data import data, features, target_names
 
 # Constants
 RANDOM_SEED = 42
