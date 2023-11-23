@@ -1,13 +1,14 @@
 from typing import List
 
-from bokeh.models import BasicTicker, ColorBar, LabelSet, LinearColorMapper
+from bokeh.models import BasicTicker, ColorBar, LinearColorMapper
 from bokeh.plotting import figure
 from bokeh.transform import transform
 from dara.core import DerivedVariable, py_component, Variable
-from dara.components import Bokeh, Card, Slider, Stack, Text
+from dara.components import Bokeh, Card, Slider, Stack, Spacer, Text
+from dara.components.common.select import Select
 from dara.components.plotting.palettes import SequentialDark8
 import numpy as np
-import pandas
+import pandas as pd
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
@@ -28,7 +29,7 @@ predictions = tree.predict(X_test)
 
 @py_component
 def confusion_matrix_plot(preds: np.array) -> None:
-    df = pandas.DataFrame(
+    df = pd.DataFrame(
         confusion_matrix(y_test, preds), index=target_names, columns=target_names
     )
     df.index.name = 'Actual'
@@ -84,27 +85,46 @@ def confusion_matrix_plot(preds: np.array) -> None:
     return Bokeh(p)
 
 
-def calculate_predictions(n: List[int]):
-    tree = DecisionTreeClassifier(max_depth=n[0], random_state=1)
+def calculate_predictions(map_depth: List[int], min_samples_leaf, criterion, splitter):
+    tree = DecisionTreeClassifier(max_depth=map_depth[0],
+                                  criterion=criterion,
+                                  min_samples_leaf=min_samples_leaf[0],
+                                  splitter=splitter,
+                                  random_state=1)
     tree.fit(X_train, y_train)
     predictions = tree.predict(X_test)
     return predictions
 
 
-max_depth_var = Variable([10])
+max_depth_var = Variable([5])
+min_samples_leaf_var = Variable([1])
+criterion_var = Variable("gini")
+splitter_var = Variable("best")
 predictions_var = DerivedVariable(
     calculate_predictions,
-    variables=[max_depth_var]
+    variables=[max_depth_var, min_samples_leaf_var, criterion_var, splitter_var]
 )
 
 
 def classification_page():
     return Card(
         Stack(
-            Text('Max Depth:', width='15%'),
-            Slider(domain=[1, 10], value=max_depth_var, step=1, ticks=[i + 1 for i in range(0, 10)]),
+            Text('Maximum Tree Depth:', width='15%'),
+            Slider(domain=[1, 15], value=max_depth_var, step=1, ticks=[i + 1 for i in range(0, 15)], disable_input_alternative=True),
+            Spacer(size='15%'),
+            Text('Minimum Sample Split:', width='15%'),
+            Slider(domain=[1, 10], value=min_samples_leaf_var, step=1, ticks=[i + 1 for i in range(0, 10, 1)], disable_input_alternative=True),
             direction='horizontal',
             hug=True,
+        ),
+        Stack(
+            Text("Criterion: ", width="10%"),
+            Select(value=criterion_var, items=["gini", "entropy", "log_loss"], searchable=False),
+            Spacer(size='15%'),
+            Text("Splitter: ", width="10%"),
+            Select(value=splitter_var, items=["best", "random"], searchable=False),
+            direction="horizontal",
+            hug=True
         ),
         confusion_matrix_plot(predictions_var),
         title='Classification Results'
