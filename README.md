@@ -1,6 +1,10 @@
-# My first Dara App
+# My first Dara App: Wine Classification Problem
 
-## Installation commands
+![image of a glass of wine](https://archive.ics.uci.edu/static/public/109/Thumbnails/Large.jpg?37)
+
+---
+
+## A. Installation
 
 ### 1. Poetry
 
@@ -20,7 +24,11 @@
 
 * Install `poetry add dara-core --extras all`
 
-### 3. Hello World
+---
+
+## B. Creating a basic app
+
+### 1. Hello World
 
 * Add base code to `main.py`
 
@@ -28,7 +36,7 @@
 
 * Visit http://0.0.0.0:8000/
 
-### 4. Add new pages
+### 2. Add new pages
 
 * Install dependencies to build a page that cna handle data: `poetry add scikit-learn`
 
@@ -36,11 +44,20 @@
 
 * Add new pages to the main config using `config.add()`
 
-### 5. Interactivity
+### 3. Interactivity
 
 * use `dara.core.Variable`
 * use `dara.components.Select` for dropdowns
 * add `dara.core.py_component` as a decorator
 
+---
 
+## 3.Future Components
 
+todo
+
+---
+
+## Contact
+
+* Email address: adam[dot]jaamour[at]causalens[dot]com
