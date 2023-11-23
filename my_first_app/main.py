@@ -2,6 +2,7 @@ from dara.core import ConfigurationBuilder
 
 from my_first_app.pages.classification import classification_page
 from my_first_app.pages.eda import eda_page
+from my_first_app.pages.home import home_page
 
 
 # Create a configuration builder
@@ -11,5 +12,6 @@ config = ConfigurationBuilder()
 config.set_theme('dark')
 
 # Register pages
+config.add_page('Home', home_page())
 config.add_page('EDA', eda_page())
 config.add_page('Classification', classification_page())

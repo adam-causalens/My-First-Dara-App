@@ -41,5 +41,5 @@ def eda_page():
             hug=True,
         ),
         scatter_plot(x_var, y_var),
-        title='Scatter Plot'
+        title='Exploratory Data Analysis'
     )
