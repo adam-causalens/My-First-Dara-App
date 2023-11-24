@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn import datasets
 
-wine = datasets.load_wine()
+wine = datasets.load_wine()  # https://archive.ics.uci.edu/dataset/109/wine
 features = wine.feature_names
 target_names = wine.target_names
 data = pd.DataFrame(wine.data, columns=features)
