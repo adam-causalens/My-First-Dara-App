@@ -4,7 +4,8 @@ from bokeh.models import BasicTicker, ColorBar, LinearColorMapper
 from bokeh.plotting import figure
 from bokeh.transform import transform
 from dara.core import DerivedVariable, py_component, Variable
-from dara.components import Bokeh, Card, Slider, Stack, Spacer, Text
+from dara.core.visual.themes import Light
+from dara.components import Bokeh, Card, Grid, Heading, Slider, Spacer, Stack, Text
 from dara.components.common.select import Select
 from dara.components.plotting.palettes import SequentialDark8
 import numpy as np
@@ -20,7 +21,7 @@ RANDOM_SEED = 42
 
 # Train model
 X_train, X_test, y_train, y_test = train_test_split(
-    data[features], data['species'], test_size=0.2, random_state=RANDOM_SEED
+    data[features], data['species'], test_size=0.5, random_state=RANDOM_SEED
 )
 tree = DecisionTreeClassifier(max_depth=3, random_state=RANDOM_SEED)
 tree.fit(X_train, y_train)
@@ -28,7 +29,7 @@ predictions = tree.predict(X_test)
 
 
 @py_component
-def confusion_matrix_plot(preds: np.array) -> None:
+def confusion_matrix_plot(preds: np.array) -> Bokeh:
     df = pd.DataFrame(
         confusion_matrix(y_test, preds), index=target_names, columns=target_names
     )
@@ -85,15 +86,15 @@ def confusion_matrix_plot(preds: np.array) -> None:
     return Bokeh(p)
 
 
-def calculate_predictions(map_depth: List[int], min_samples_leaf, criterion, splitter):
-    tree = DecisionTreeClassifier(max_depth=map_depth[0],
-                                  criterion=criterion,
-                                  min_samples_leaf=min_samples_leaf[0],
-                                  splitter=splitter,
-                                  random_state=1)
-    tree.fit(X_train, y_train)
-    predictions = tree.predict(X_test)
-    return predictions
+def calculate_predictions(max_depth_map: List[int], min_samples_leaf_map, criterion_map, splitter_map):
+    dt = DecisionTreeClassifier(max_depth=max_depth_map[0],
+                                criterion=criterion_map,
+                                min_samples_leaf=min_samples_leaf_map[0],
+                                splitter=splitter_map,
+                                random_state=1)
+    dt.fit(X_train, y_train)
+    dt_preds = dt.predict(X_test)
+    return dt_preds
 
 
 max_depth_var = Variable([5])
@@ -107,25 +108,39 @@ predictions_var = DerivedVariable(
 
 
 def classification_page():
-    return Card(
-        Stack(
-            Text('Maximum Tree Depth:', width='15%'),
-            Slider(domain=[1, 15], value=max_depth_var, step=1, ticks=[i + 1 for i in range(0, 15)], disable_input_alternative=True),
-            Spacer(size='15%'),
-            Text('Minimum Sample Split:', width='15%'),
-            Slider(domain=[1, 10], value=min_samples_leaf_var, step=1, ticks=[i + 1 for i in range(0, 10, 1)], disable_input_alternative=True),
-            direction='horizontal',
-            hug=True,
-        ),
-        Stack(
-            Text("Criterion: ", width="10%"),
-            Select(value=criterion_var, items=["gini", "entropy", "log_loss"], searchable=False),
-            Spacer(size='15%'),
-            Text("Splitter: ", width="10%"),
-            Select(value=splitter_var, items=["best", "random"], searchable=False),
-            direction="horizontal",
-            hug=True
-        ),
-        confusion_matrix_plot(predictions_var),
-        title='Classification Results'
+    return Stack(
+        Heading('Classification Results'),
+        Text("Scikit-Learn Decision Tree Model"),
+        Grid(
+            Grid.Row(
+                Grid.Column(
+                    Text('Maximum Tree Depth'),
+                    Slider(domain=[1, 15], value=max_depth_var, step=1, ticks=[i + 1 for i in range(0, 15)],
+                           disable_input_alternative=True),
+                    Text('Minimum Sample Split'),
+                    Slider(domain=[1, 10], value=min_samples_leaf_var, step=1,
+                           ticks=[i + 1 for i in range(0, 10, 1)],
+                           disable_input_alternative=True),
+                    Text("Criterion "),
+                    Select(value=criterion_var, items=["gini", "entropy", "log_loss"], searchable=False),
+                    Text("Splitter"),
+                    Select(value=splitter_var, items=["best", "random"], searchable=False),
+                    direction='vertical',
+                    span=2
+                ),
+                Grid.Column(span=1),
+                Grid.Column(
+                    confusion_matrix_plot(predictions_var),
+                    span=5
+                ),
+                Grid.Column(span=1),
+                Grid.Column(
+                    Text('Row 1 Column 2'),
+                    background=Light.colors.blue3,
+                    justify='center',
+                    span=3
+                ),
+                padding='5px'
+            )
+        )
     )
