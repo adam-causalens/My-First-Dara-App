@@ -1,10 +1,19 @@
 # My first Dara App: Wine Classification Problem
 
-![image of a glass of wine](https://archive.ics.uci.edu/static/public/109/Thumbnails/Large.jpg?37)
-
 ---
 
-## A. Installation
+## A. Screenshots
+
+Home page
+![home page](static/home.jpg)
+
+EDA page
+![home page](static/eda.jpg)
+
+Classification page
+![home page](static/classification.jpg)
+
+## B. Installation and Setup
 
 ### 1. Poetry
 
@@ -24,9 +33,7 @@
 
 * Install `poetry add dara-core --extras all`
 
----
-
-## B. Creating a basic app
+## C. Creating a basic app tutorial
 
 ### 1. Hello World
 
@@ -44,19 +51,12 @@
 
 * Add new pages to the main config using `config.add()`
 
-### 3. Interactivity
-
-* use `dara.core.Variable`
-* use `dara.components.Select` for dropdowns
-* add `dara.core.py_component` as a decorator
-
----
-
 ## 3.Future Components
 
-todo
+* [ ] Choose model from list of model e.g., RF, GBMs, SVM, ...
+* [ ] More model validation metrics (ROC curve, precision/recall trade-off)
+* [ ] More EDA (similar to pandas-profiling)
 
----
 
 ## Contact
 
