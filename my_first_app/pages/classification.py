@@ -4,13 +4,12 @@ from bokeh.models import BasicTicker, ColorBar, LinearColorMapper
 from bokeh.plotting import figure
 from bokeh.transform import transform
 from dara.core import DerivedVariable, py_component, Variable
-from dara.core.visual.themes import Light
-from dara.components import Bokeh, Card, Grid, Heading, Slider, Spacer, Stack, Text
+from dara.components import Bokeh, Grid, Heading, Slider, Stack, Text
 from dara.components.common.select import Select
 from dara.components.plotting.palettes import SequentialDark8
 import numpy as np
 import pandas as pd
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 
@@ -18,16 +17,37 @@ from my_first_app.data import data, features, target_names
 
 # Constants
 RANDOM_SEED = 42
+METRIC_GRANULARITY = 3
 
 # Train model
 X_train, X_test, y_train, y_test = train_test_split(
-    data[features], data['species'], test_size=0.5, random_state=RANDOM_SEED
+    data[features], data['species'], test_size=0.33, random_state=RANDOM_SEED
 )
 tree = DecisionTreeClassifier(max_depth=3, random_state=RANDOM_SEED)
 tree.fit(X_train, y_train)
 predictions = tree.predict(X_test)
 
 
+def calculate_predictions(max_depth_map: List[int], min_samples_leaf_map, criterion_map, splitter_map):
+    """
+    Calculates the predictions with the new parameters.
+    :param max_depth_map:
+    :param min_samples_leaf_map:
+    :param criterion_map:
+    :param splitter_map:
+    :return:
+    """
+    dt = DecisionTreeClassifier(max_depth=max_depth_map[0],
+                                criterion=criterion_map,
+                                min_samples_leaf=min_samples_leaf_map[0],
+                                splitter=splitter_map,
+                                random_state=RANDOM_SEED)
+    dt.fit(X_train, y_train)
+    dt_preds = dt.predict(X_test)
+    return dt_preds
+
+
+# Calculate metrics
 @py_component
 def confusion_matrix_plot(preds: np.array) -> Bokeh:
     df = pd.DataFrame(
@@ -86,17 +106,12 @@ def confusion_matrix_plot(preds: np.array) -> Bokeh:
     return Bokeh(p)
 
 
-def calculate_predictions(max_depth_map: List[int], min_samples_leaf_map, criterion_map, splitter_map):
-    dt = DecisionTreeClassifier(max_depth=max_depth_map[0],
-                                criterion=criterion_map,
-                                min_samples_leaf=min_samples_leaf_map[0],
-                                splitter=splitter_map,
-                                random_state=1)
-    dt.fit(X_train, y_train)
-    dt_preds = dt.predict(X_test)
-    return dt_preds
+calculate_accuracy = lambda preds: str(round(accuracy_score(y_true=y_test, y_pred=preds), METRIC_GRANULARITY))
+calculate_precision = lambda preds: str(round(precision_score(y_true=y_test, y_pred=preds, average="micro"), METRIC_GRANULARITY))
+calculate_recall = lambda preds: str(round(recall_score(y_true=y_test, y_pred=preds, average="micro"), METRIC_GRANULARITY))
+calculate_f1 = lambda preds: str(round(f1_score(y_true=y_test, y_pred=preds, average="micro"), METRIC_GRANULARITY))
 
-
+# Define variables that can be updated
 max_depth_var = Variable([5])
 min_samples_leaf_var = Variable([1])
 criterion_var = Variable("gini")
@@ -105,6 +120,10 @@ predictions_var = DerivedVariable(
     calculate_predictions,
     variables=[max_depth_var, min_samples_leaf_var, criterion_var, splitter_var]
 )
+acc_var = DerivedVariable(calculate_accuracy, variables=[predictions_var])
+prec_var = DerivedVariable(calculate_precision, variables=[predictions_var])
+rec_var = DerivedVariable(calculate_recall, variables=[predictions_var])
+f1_var = DerivedVariable(calculate_f1, variables=[predictions_var])
 
 
 def classification_page():
@@ -135,10 +154,16 @@ def classification_page():
                 ),
                 Grid.Column(span=1),
                 Grid.Column(
-                    Text('Row 1 Column 2'),
-                    background=Light.colors.blue3,
-                    justify='center',
-                    span=3
+                    Text('Classification Metrics', bold=True),
+                    Stack(
+                        Stack(Text(f'Accuracy'), Text(acc_var), direction='horizontal'),
+                        Stack(Text(f'Precision'), Text(prec_var), direction='horizontal'),
+                        Stack(Text(f'Recall'), Text(rec_var), direction='horizontal'),
+                        Stack(Text(f'F1'), Text(f1_var), direction='horizontal'),
+                        hug=True
+                    ),
+                    direction='vertical',
+                    span=3,
                 ),
                 padding='5px'
             )
